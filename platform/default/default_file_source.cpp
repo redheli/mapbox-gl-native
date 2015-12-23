@@ -6,14 +6,26 @@ namespace mbgl {
 class DefaultFileSource::Impl {
 public:
     Impl(FileCache* cache, const std::string& root, const std::string& offlinePath)
-        : offlineFileSource(offlinePath),
-          onlineFileSource(cache, root) {
+        : onlineFileSource(cache, root),
+          offlineFileSource(&onlineFileSource, offlinePath) {
     }
 
-    OfflineFileSource offlineFileSource;
     OnlineFileSource onlineFileSource;
+    OfflineFileSource offlineFileSource;
 };
 
+class StyleFileRequest : public FileRequest {
+public:
+    StyleFileRequest(const std::string& url, FileSource::Callback callback, DefaultFileSource::Impl& impl) {
+        offlineRequest = impl.offlineFileSource.downloadStyle(url, [&impl, url, callback, this] (Response response) {
+            callback(response);
+        });
+    }
+    
+    std::unique_ptr<FileRequest> offlineRequest;
+};
+
+    
 class DefaultFileRequest : public FileRequest {
 public:
     DefaultFileRequest(const Resource& resource, FileSource::Callback callback, DefaultFileSource::Impl& impl) {
@@ -46,6 +58,10 @@ std::string DefaultFileSource::getAccessToken() const {
 
 std::unique_ptr<FileRequest> DefaultFileSource::request(const Resource& resource, Callback callback) {
     return std::make_unique<DefaultFileRequest>(resource, callback, *impl);
+}
+
+std::unique_ptr<FileRequest> DefaultFileSource::downloadStyle(const std::string &url, Callback callback) {
+    return std::make_unique<StyleFileRequest>(url, callback, *impl);
 }
 
 } // namespace mbgl

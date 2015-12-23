@@ -58,26 +58,26 @@
         }
         //mbgl::FileSource* fs = mbgl::util::ThreadContext::getFileSource();
         std::unique_ptr<mbgl::FileRequest> styleRequest;
-        styleRequest = mbglFileSource->request({ mbgl::Resource::Kind::Style, [[styleURL absoluteString] cStringUsingEncoding: NSUTF8StringEncoding] }, [&styleRequest, base](mbgl::Response res) {
-            if (res.stale) {
-                // Only handle fresh responses.
-                return;
-            }
-            styleRequest = nullptr;
-            
-            if (res.error) {
-                /*if (res.error->reason == mbgl::Response::Error::Reason::NotFound && styleURL.find("mapbox://") == 0) {
-                    Log::Error(Event::Setup, "style %s could not be found or is an incompatible legacy map or style", styleURL.c_str());
-                } else {*/
-                mbgl::Log::Error(mbgl::Event::Setup, "loading style failed: %s", res.error->message.c_str());
-                    //data.loading = false;
-                //}
-            } else {
-                //loadStyleJSON(*res.data, base);
-                mbgl::Log::Error(mbgl::Event::Setup, "successfully loaded style");
-            }
-            
-        });
+        styleRequest = mbglFileSource->downloadStyle([[styleURL absoluteString] cStringUsingEncoding: NSUTF8StringEncoding],
+                                                     [&styleRequest](mbgl::Response res) {
+                                                         if (res.stale) {
+                                                             return;
+                                                         }
+                                                         styleRequest = nullptr;
+                                                         
+                                                         if (res.error) {
+                                                             /*if (res.error->reason == mbgl::Response::Error::Reason::NotFound && styleURL.find("mapbox://") == 0) {
+                                                              Log::Error(Event::Setup, "style %s could not be found or is an incompatible legacy map or style", styleURL.c_str());
+                                                              } else {*/
+                                                             mbgl::Log::Error(mbgl::Event::Setup, "loading style failed: %s", res.error->message.c_str());
+                                                             //data.loading = false;
+                                                             //}
+                                                         } else {
+                                                             //loadStyleJSON(*res.data, base);
+                                                             mbgl::Log::Error(mbgl::Event::Setup, "successfully loaded style");
+                                                         }
+                                                         
+                                                     });
     }
     return result;
 }

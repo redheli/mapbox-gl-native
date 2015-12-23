@@ -16,9 +16,12 @@ public:
     std::string getAccessToken() const;
 
     std::unique_ptr<FileRequest> request(const Resource&, Callback) override;
+    
+    std::unique_ptr<FileRequest> downloadStyle(const std::string &url, Callback);
 
 private:
     friend class DefaultFileRequest;
+    friend class StyleFileRequest;
     class Impl;
     const std::unique_ptr<Impl> impl;
 };

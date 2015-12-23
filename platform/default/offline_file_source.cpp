@@ -1,4 +1,5 @@
 #include "offline_file_source.hpp"
+#include "online_file_source.hpp"
 #include <mbgl/storage/response.hpp>
 
 #include <mbgl/map/tile_id.hpp>
@@ -28,9 +29,20 @@ public:
 private:
     std::unique_ptr<WorkRequest> workRequest;
 };
+    
+class OfflineStyleFileRequest : public FileRequest {
+public:
+    OfflineStyleFileRequest(std::unique_ptr<WorkRequest> workRequest_)
+    : workRequest(std::move(workRequest_)) {
+    }
+    
+private:
+    std::unique_ptr<WorkRequest> workRequest;
+};
 
-OfflineFileSource::OfflineFileSource(const std::string& path)
-    : thread(std::make_unique<util::Thread<Impl>>(util::ThreadContext{ "OfflineFileSource", util::ThreadType::Unknown, util::ThreadPriority::Low }, path)) {
+OfflineFileSource::OfflineFileSource(OnlineFileSource *inOnlineFileSource, const std::string& path)
+    : thread(std::make_unique<util::Thread<Impl>>(util::ThreadContext{ "OfflineFileSource", util::ThreadType::Unknown, util::ThreadPriority::Low }, path)),
+      onlineFileSource(inOnlineFileSource) {
 }
 
 OfflineFileSource::~OfflineFileSource() = default;
@@ -41,6 +53,7 @@ public:
     ~Impl();
 
     void handleRequest(Resource, Callback);
+    void handleDownloadStyle(const std::string &, Callback);
 
 private:
     void respond(Statement&, Callback);
@@ -61,6 +74,16 @@ OfflineFileSource::Impl::~Impl() {
     }
 }
 
+void OfflineFileSource::Impl::handleDownloadStyle(const std::string &url, Callback callback) {
+    (void)url;
+    (void)callback;
+    try {
+        
+    } catch(const std::exception& ex) {
+        
+    }
+}
+    
 void OfflineFileSource::Impl::handleRequest(Resource resource, Callback callback) {
     try {
         if (!db) {
@@ -131,4 +154,9 @@ std::unique_ptr<FileRequest> OfflineFileSource::request(const Resource& resource
     return std::make_unique<OfflineFileRequest>(thread->invokeWithCallback(&Impl::handleRequest, callback, resource));
 }
 
+std::unique_ptr<FileRequest> OfflineFileSource::downloadStyle(const std::string &url, Callback callback) {
+    return std::make_unique<OfflineFileRequest>(thread->invokeWithCallback(&Impl::handleDownloadStyle, callback, url));
+    //return std::make_unique<OfflineStyleFileRequest>(url, callback, *impl);
+}
+    
 } // namespace mbgl
