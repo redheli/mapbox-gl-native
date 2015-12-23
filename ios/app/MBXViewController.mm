@@ -6,6 +6,8 @@
 #import <CoreLocation/CoreLocation.h>
 #import <OpenGLES/ES2/gl.h>
 
+#import "MGLOfflineMapDownloader.h"
+
 static UIColor *const kTintColor = [UIColor colorWithRed:0.120 green:0.550 blue:0.670 alpha:1.000];
 
 static const CLLocationCoordinate2D WorldTourDestinations[] = {
@@ -161,6 +163,7 @@ static const CLLocationCoordinate2D WorldTourDestinations[] = {
                                                                 @"Start World Tour",
                                                                 @"Remove Annotations",
                                                                 @"Toggle Custom Style Layer",
+                            @"Test Offline Download",
                                                                 nil];
 
     [sheet showFromBarButtonItem:self.navigationItem.leftBarButtonItem animated:YES];
@@ -281,6 +284,13 @@ static const CLLocationCoordinate2D WorldTourDestinations[] = {
         {
             [self insertCustomStyleLayer];
         }
+    }
+    else if (buttonIndex == actionSheet.firstOtherButtonIndex + 11) {
+        [MGLOfflineMapDownloader beginDownloadingStyleURL:[MGLStyle streetsStyleURL]
+                                                 delegate:nil
+                                         coordinateBounds:[_mapView visibleCoordinateBounds]
+                                                 minimumZ:12.0f
+                                                 maximumZ:15.0f];
     }
 }
 

@@ -7,6 +7,7 @@
 #import "MGLMapView+IBAdditions.h"
 #import "MGLMapView+MGLCustomStyleLayerAdditions.h"
 #import "MGLMultiPoint.h"
+#import "MGLOfflineMapDownloader.h"
 #import "MGLOverlay.h"
 #import "MGLPointAnnotation.h"
 #import "MGLPolygon.h"
