@@ -17,7 +17,10 @@ struct Resource {
         SpriteJSON
     };
 
+    Resource(Kind, const std::string&);
+
     const Kind kind;
+    const bool isAsset;
     const std::string url;
 
     inline bool operator==(const Resource &res) const {

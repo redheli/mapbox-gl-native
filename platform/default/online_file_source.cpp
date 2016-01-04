@@ -15,19 +15,10 @@
 #include <mbgl/util/noncopyable.hpp>
 #include <mbgl/util/timer.hpp>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-#include <boost/algorithm/string.hpp>
-#pragma GCC diagnostic pop
-
 #include <algorithm>
 #include <cassert>
 #include <set>
 #include <unordered_map>
-
-namespace algo = boost::algorithm;
 
 namespace mbgl {
 
@@ -240,7 +231,7 @@ void OnlineFileSource::Impl::update(OnlineFileRequestImpl& request) {
     } else if (!request.cacheRequest && !request.realRequest) {
         // There is no request in progress, and we don't have a response yet. This means we'll have
         // to start the request ourselves.
-        if (cache) {
+        if (cache && !request.resource.isAsset) {
             startCacheRequest(request);
         } else {
             startRealRequest(request);
@@ -299,7 +290,7 @@ void OnlineFileSource::Impl::startRealRequest(OnlineFileRequestImpl& request) {
         reschedule(request);
     };
 
-    if (algo::starts_with(request.resource.url, "asset://")) {
+    if (request.resource.isAsset) {
         request.realRequest =
             assetContext->createRequest(request.resource.url, callback, assetRoot);
     } else {
