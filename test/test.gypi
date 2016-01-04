@@ -86,6 +86,7 @@
         'storage/http_retry_network_status.cpp',
         'storage/http_reading.cpp',
         'storage/http_timeout.cpp',
+        'storage/stale_style.cpp',
 
         'style/glyph_store.cpp',
         'style/pending_resources.cpp',
