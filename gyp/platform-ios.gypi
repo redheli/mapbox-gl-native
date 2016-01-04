@@ -61,6 +61,7 @@
         '../include/mbgl/ios/MGLAccountManager.h',
         '../platform/ios/src/MGLAccountManager_Private.h',
         '../platform/ios/src/MGLAccountManager.m',
+	'../platform/ios/src/MGLOfflineMapDownloader.mm',
         '../include/mbgl/ios/MGLUserLocation.h',
         '../platform/ios/src/MGLUserLocation_Private.h',
         '../platform/ios/src/MGLUserLocation.m',

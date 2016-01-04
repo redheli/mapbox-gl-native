@@ -64,7 +64,7 @@ public:
     void bind(int offset, const std::string &value, bool retain = true);
     template <typename T> T get(int offset);
 
-    bool run();
+    bool run(bool expectResults = true);
     void reset();
 
 private:

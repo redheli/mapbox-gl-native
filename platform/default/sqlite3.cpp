@@ -152,11 +152,11 @@ void Statement::bind(int offset, const std::string &value, bool retain) {
     BIND_5(blob, value.data(), int(value.size()), retain ? SQLITE_TRANSIENT : SQLITE_STATIC, stmt)
 }
 
-bool Statement::run() {
+bool Statement::run(bool expectResults) {
     assert(stmt);
     const int err = sqlite3_step(stmt);
     if (err == SQLITE_DONE) {
-        return false;
+        return !expectResults;
     } else if (err == SQLITE_ROW) {
         return true;
     } else {

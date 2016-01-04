@@ -18,14 +18,16 @@
 #include <mbgl/storage/response.hpp>
 #include <mbgl/storage/file_source.hpp>
 
+#define OFFLINE_DB_PATH "", _offlineMapPath ? _offlineMapPath.UTF8String : ""
+
 @implementation MGLOfflineMapDownloader
 
-
-+(MGLOfflineMapDownloader *) beginDownloadingStyleURL:(NSURL *)styleURL
-                                             delegate:(NSObject<MGLMapViewDelegate> *)delegate
-                                     coordinateBounds:(MGLCoordinateBounds)coordinateBounds
-                                             minimumZ:(float)minimumZ
-                                             maximumZ:(float)maximumZ
++(MGLOfflineMapDownloader *) beginDownloadingToPath:(NSString *)dbPath
+                                           StyleURL:(NSURL *)styleURL
+                                           delegate:(NSObject<MGLMapViewDelegate> *)delegate
+                                   coordinateBounds:(MGLCoordinateBounds)coordinateBounds
+                                           minimumZ:(float)minimumZ
+                                           maximumZ:(float)maximumZ
 {
     MGLOfflineMapDownloader *result = [[MGLOfflineMapDownloader alloc] init];
     if(result) {
@@ -42,7 +44,7 @@
             fileCachePath = [libraryDirectory stringByAppendingPathComponent:@"offline_cache.db"];
         }
         std::shared_ptr<mbgl::SQLiteCache> mbglFileCache = mbgl::SharedSQLiteCache::get([fileCachePath UTF8String]);
-        mbgl::DefaultFileSource *mbglFileSource = new mbgl::DefaultFileSource(mbglFileCache.get(), "", "");
+        mbgl::DefaultFileSource *mbglFileSource = new mbgl::DefaultFileSource(mbglFileCache.get(), "", dbPath ? dbPath.UTF8String : "");
         
         //First step - download the style URL
         /*const size_t pos = styleURL.rfind('/');

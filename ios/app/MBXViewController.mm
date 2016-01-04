@@ -286,11 +286,16 @@ static const CLLocationCoordinate2D WorldTourDestinations[] = {
         }
     }
     else if (buttonIndex == actionSheet.firstOtherButtonIndex + 11) {
-        [MGLOfflineMapDownloader beginDownloadingStyleURL:[MGLStyle streetsStyleURL]
-                                                 delegate:nil
-                                         coordinateBounds:[_mapView visibleCoordinateBounds]
-                                                 minimumZ:12.0f
-                                                 maximumZ:15.0f];
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+        NSString *libraryDirectory = [paths objectAtIndex:0];
+        NSString *offlineMapPath =  [libraryDirectory stringByAppendingPathComponent:@"offline_cache.mbtiles"];
+
+        [MGLOfflineMapDownloader beginDownloadingToPath:offlineMapPath
+                                               StyleURL:[MGLStyle streetsStyleURL]
+                                               delegate:nil
+                                       coordinateBounds:[_mapView visibleCoordinateBounds]
+                                               minimumZ:12.0f
+                                               maximumZ:15.0f];
     }
 }
 
