@@ -56,12 +56,11 @@ private:
     mutable std::map<std::string, util::ptr<GeometryTileLayer>> layers;
 };
 
-class SourceInfo;
 class TileID;
 
 class VectorTileMonitor : public GeometryTileMonitor {
 public:
-    VectorTileMonitor(const SourceInfo&, const TileID&, float pixelRatio);
+    VectorTileMonitor(const std::string& url);
 
     std::unique_ptr<FileRequest> monitorTile(const GeometryTileMonitor::Callback&) override;
 
