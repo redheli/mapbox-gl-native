@@ -48,7 +48,7 @@ public:
 };
 
 OfflineFileSource::OfflineFileSource(OnlineFileSource *inOnlineFileSource, const std::string& path)
-    : thread(std::make_unique<util::Thread<Impl>>(util::ThreadContext{ "OfflineFileSource", util::ThreadType::Unknown, util::ThreadPriority::Low }, path)),
+    : thread(std::make_unique<util::Thread<Impl>>(util::ThreadContext{ "OfflineFileSource", util::ThreadType::Unknown, util::ThreadPriority::Low }, path, inOnlineFileSource)),
       onlineFileSource(inOnlineFileSource) {
 }
 
@@ -56,7 +56,7 @@ OfflineFileSource::~OfflineFileSource() = default;
 
 class OfflineFileSource::Impl {
 public:
-    explicit Impl(const std::string& path);
+    explicit Impl(const std::string& path, OnlineFileSource *inOnlineFileSource);
     ~Impl();
 
     void handleRequest(Resource, Callback);
@@ -67,10 +67,13 @@ private:
 
     const std::string path;
     std::unique_ptr<::mapbox::sqlite::Database> db;
+    OnlineFileSource *onlineFileSource;
+    std::unique_ptr<FileRequest> styleRequest;
 };
 
-OfflineFileSource::Impl::Impl(const std::string& path_)
-    : path(path_) {
+OfflineFileSource::Impl::Impl(const std::string& path_, OnlineFileSource *inOnlineFileSource)
+    : path(path_),
+      onlineFileSource(inOnlineFileSource) {
 }
 
 OfflineFileSource::Impl::~Impl() {
@@ -97,19 +100,60 @@ void OfflineFileSource::Impl::handleDownloadStyle(const std::string &url, Callba
         getStmt.bind(1, name.c_str());
         if (getStmt.run()) {
             Response response;
+            //The data is going to be a string representation of JSON
             response.data = std::make_shared<std::string>(getStmt.get<std::string>(0));
             callback(response);
         } else {
-            Response response;
-            response.error = std::make_unique<Response::Error>(Response::Error::Reason::NotFound);
-            callback(response);
+            //Actually download the style
+            Log::Error(Event::Setup, "loading style %s", url.c_str());
+            styleRequest = onlineFileSource->request({ Resource::Kind::Style, url }, [this, url, name, callback](Response res) {
+                if (res.stale) {
+                    // Only handle fresh responses.
+                    return;
+                }
+                styleRequest = nullptr;
+                
+                if (res.error) {
+                    if (res.error->reason == Response::Error::Reason::NotFound && url.find("mapbox://") == 0) {
+                        Log::Error(Event::Setup, "style %s could not be found or is an incompatible legacy map or style", url.c_str());
+                    } else {
+                        Log::Error(Event::Setup, "loading style failed: %s", res.error->message.c_str());
+                    }
+                } else {
+                    //loadStyleJSON(*res.data, base);
+                    //Put this new data in the DB and then call handleDownloadStyle again
+                    std::unique_ptr<::mapbox::sqlite::Database> dbWritable;
+                    dbWritable = std::make_unique<Database>(path.c_str(), ReadWrite | Create);
+                    
+                    bool insertStmtResult;
+                    {
+                        Statement insertStmt = dbWritable->prepare("INSERT INTO metadata (name, value) VALUES (?, ?)");
+                        insertStmt.bind(1, name.c_str());
+                        insertStmt.bind(2, res.data->c_str());
+                        insertStmtResult = insertStmt.run(false);
+                    }
+                    if (insertStmtResult) {
+                        //Start over
+                        Log::Error(Event::Database, "Successfully downloaded and stored style, starting over");
+                        db.reset();
+                        handleDownloadStyle(url, callback);
+                        return;
+                    } else {
+                        Response response;
+                        response.error = std::make_unique<Response::Error>(Response::Error::Reason::Other);
+                        callback(response);
+                    }
+                }
+                
+            });
         }
 
         
     } catch(const std::exception& ex) {
         Log::Error(Event::Database, ex.what());
         std::string exAsString = std::string(ex.what());
-        if (exAsString.rfind("no such table") != std::string::npos) {
+        if ((exAsString.rfind("no such table") != std::string::npos) ||
+            (exAsString.rfind("unable to open database") != std::string::npos)) {
             //Create the table in the database
             std::unique_ptr<::mapbox::sqlite::Database> dbWritable;
             dbWritable = std::make_unique<Database>(path.c_str(), ReadWrite | Create);

@@ -7,6 +7,7 @@
 //
 
 #import "MGLOfflineMapDownloader.h"
+#import "MGLAccountManager.h"
 
 #include <string>
 #include <mbgl/storage/sqlite_cache.hpp>
@@ -19,6 +20,10 @@
 #include <mbgl/storage/file_source.hpp>
 
 #define OFFLINE_DB_PATH "", _offlineMapPath ? _offlineMapPath.UTF8String : ""
+
+@interface MGLOfflineMapDownloader ()
+
+@end
 
 @implementation MGLOfflineMapDownloader
 
@@ -45,6 +50,7 @@
         }
         std::shared_ptr<mbgl::SQLiteCache> mbglFileCache = mbgl::SharedSQLiteCache::get([fileCachePath UTF8String]);
         mbgl::DefaultFileSource *mbglFileSource = new mbgl::DefaultFileSource(mbglFileCache.get(), "", dbPath ? dbPath.UTF8String : "");
+        mbglFileSource->setAccessToken([[MGLAccountManager accessToken] cStringUsingEncoding:NSUTF8StringEncoding]);
         
         //First step - download the style URL
         /*const size_t pos = styleURL.rfind('/');
@@ -58,24 +64,15 @@
         if (pos != std::string::npos) {
             base = styleURLAsString.substr(0, pos + 1);
         }
-        //mbgl::FileSource* fs = mbgl::util::ThreadContext::getFileSource();
-        std::unique_ptr<mbgl::FileRequest> styleRequest;
-        styleRequest = mbglFileSource->downloadStyle([[styleURL absoluteString] cStringUsingEncoding: NSUTF8StringEncoding],
-                                                     [&styleRequest](mbgl::Response res) {
+        std::unique_ptr<mbgl::FileRequest> styleRequest = mbglFileSource->downloadStyle([[styleURL absoluteString] cStringUsingEncoding: NSUTF8StringEncoding],
+                                                     [](mbgl::Response res) {
                                                          if (res.stale) {
                                                              return;
                                                          }
-                                                         styleRequest = nullptr;
                                                          
                                                          if (res.error) {
-                                                             /*if (res.error->reason == mbgl::Response::Error::Reason::NotFound && styleURL.find("mapbox://") == 0) {
-                                                              Log::Error(Event::Setup, "style %s could not be found or is an incompatible legacy map or style", styleURL.c_str());
-                                                              } else {*/
                                                              mbgl::Log::Error(mbgl::Event::Setup, "loading style failed: %s", res.error->message.c_str());
-                                                             //data.loading = false;
-                                                             //}
                                                          } else {
-                                                             //loadStyleJSON(*res.data, base);
                                                              mbgl::Log::Error(mbgl::Event::Setup, "successfully loaded style");
                                                          }
                                                          
