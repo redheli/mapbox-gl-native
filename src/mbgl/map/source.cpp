@@ -307,16 +307,16 @@ TileData::State Source::addTile(const TileID& id, const StyleUpdateParameters& p
         if (info.type == SourceType::Raster) {
             auto tileData = std::make_shared<RasterTileData>(normalized_id,
                                                              parameters.texturePool,
-                                                             info,
                                                              parameters.worker);
 
-            tileData->request(parameters.pixelRatio, callback);
+            tileData->request(info.tileURL(tileData->id, parameters.pixelRatio), callback);
             newTile->data = tileData;
         } else {
             std::unique_ptr<GeometryTileMonitor> monitor;
 
             if (info.type == SourceType::Vector) {
-                monitor = std::make_unique<VectorTileMonitor>(info, normalized_id, parameters.pixelRatio);
+
+                monitor = std::make_unique<VectorTileMonitor>(info.tileURL(normalized_id, parameters.pixelRatio));
             } else if (info.type == SourceType::Annotations) {
                 monitor = std::make_unique<AnnotationTileMonitor>(normalized_id, parameters.data);
             } else if (info.type == SourceType::GeoJSON) {

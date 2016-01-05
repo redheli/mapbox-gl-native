@@ -177,8 +177,8 @@ util::ptr<const GeometryTileFeature> VectorTileLayer::getFeature(std::size_t i) 
     return std::make_shared<VectorTileFeature>(features.at(i), *this);
 }
 
-VectorTileMonitor::VectorTileMonitor(const SourceInfo& source, const TileID& id, float pixelRatio)
-    : url(source.tileURL(id, pixelRatio)) {
+VectorTileMonitor::VectorTileMonitor(const std::string& url_)
+    : url(url_) {
 }
 
 std::unique_ptr<FileRequest> VectorTileMonitor::monitorTile(const GeometryTileMonitor::Callback& callback) {
