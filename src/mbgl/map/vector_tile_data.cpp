@@ -10,7 +10,7 @@ namespace mbgl {
 
 VectorTileData::VectorTileData(const TileID& id_,
                                std::unique_ptr<GeometryTileMonitor> monitor_,
-                               std::string sourceID,
+                               const std::string& sourceName,
                                Style& style_,
                                const MapMode mode_,
                                const std::function<void()>& callback)
@@ -18,7 +18,7 @@ VectorTileData::VectorTileData(const TileID& id_,
       style(style_),
       worker(style_.workers),
       tileWorker(id_,
-                 sourceID,
+                 sourceName,
                  *style_.spriteStore,
                  *style_.glyphAtlas,
                  *style_.glyphStore,

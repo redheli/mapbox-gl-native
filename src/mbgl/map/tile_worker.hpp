@@ -41,7 +41,7 @@ using TileParseResult = mapbox::util::variant<
 class TileWorker : public util::noncopyable {
 public:
     TileWorker(TileID,
-               std::string sourceID,
+               const std::string& sourceName,
                SpriteStore&,
                GlyphAtlas&,
                GlyphStore&,
@@ -63,7 +63,7 @@ private:
     void insertBucket(const std::string& name, std::unique_ptr<Bucket>);
 
     const TileID id;
-    const std::string sourceID;
+    const std::string sourceName;
 
     SpriteStore& spriteStore;
     GlyphAtlas& glyphAtlas;

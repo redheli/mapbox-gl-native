@@ -9,16 +9,16 @@ namespace mbgl {
 namespace util {
 namespace mapbox {
 
-const std::string protocol = "mapbox://";
+const std::string mapboxProtocol = "mapbox://";
 const std::string baseURL = "https://api.mapbox.com/";
 
 bool isMapboxURL(const std::string& url) {
-    return url.compare(0, protocol.length(), protocol) == 0;
+    return url.compare(0, mapboxProtocol.length(), mapboxProtocol) == 0;
 }
 
 std::vector<std::string> getMapboxURLPathname(const std::string& url) {
     std::vector<std::string> pathname;
-    std::size_t startIndex = protocol.length();
+    std::size_t startIndex = mapboxProtocol.length();
     while (startIndex < url.length()) {
         std::size_t endIndex = url.find("/", startIndex);
         if (endIndex == std::string::npos) {
@@ -42,7 +42,7 @@ std::string normalizeSourceURL(const std::string& url, const std::string& access
         throw std::runtime_error("You must provide a Mapbox API access token for Mapbox tile sources");
     }
 
-    return baseURL + "v4/" + url.substr(protocol.length()) + ".json?access_token=" + accessToken + "&secure";
+    return baseURL + "v4/" + url.substr(mapboxProtocol.length()) + ".json?access_token=" + accessToken + "&secure";
 }
 
 std::string normalizeStyleURL(const std::string& url, const std::string& accessToken) {
@@ -111,11 +111,8 @@ std::string normalizeGlyphsURL(const std::string& url, const std::string& access
     return baseURL + "fonts/v1/" + user + "/" + fontstack + "/" + range + "?access_token=" + accessToken;
 }
 
-std::string normalizeTileURL(const std::string& url, const std::string& sourceURL, SourceType sourceType) {
-    if (sourceURL.empty() || !isMapboxURL(sourceURL) || sourceType != SourceType::Raster) {
-        return url;
-    }
-
+// Normalizes Mapbox raster URLs by inserting {ratio}
+std::string normalizeRasterTileURL(const std::string& url) {
     std::string::size_type queryIdx = url.rfind("?");
     // Trim off the right end but never touch anything before the extension dot.
     std::string urlSansParams((queryIdx == std::string::npos) ? url : url.substr(0, queryIdx));
@@ -176,7 +173,7 @@ std::string convertMapboxDomainsToProtocol(const std::string &url) {
 
     const std::string domain = url.substr(domain_begin, path_separator - domain_begin);
     if (domain == "api.mapbox.com" || domain.find(".tiles.mapbox.com") != std::string::npos) {
-        return std::string{ "mapbox://" } + url.substr(path_separator + 1);
+        return mapboxProtocol + url.substr(path_separator + 1);
     } else {
         return url;
     }

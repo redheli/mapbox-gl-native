@@ -91,7 +91,7 @@ public:
         return lastError;
     }
 
-    Source* getSource(const std::string& id) const;
+    Source* getSource(const std::string& name) const;
     void addSource(std::unique_ptr<Source>);
 
     std::vector<std::unique_ptr<StyleLayer>> getLayers() const;

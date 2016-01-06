@@ -5,16 +5,9 @@
 #include <mbgl/map/source_info.hpp>
 
 #include <mbgl/util/mat4.hpp>
-#include <mbgl/util/rapidjson.hpp>
 
 #include <forward_list>
 #include <map>
-
-namespace mapbox {
-namespace geojsonvt {
-class GeoJSONVT;
-} // namespace geojsonvt
-} // namespace mapbox
 
 namespace mbgl {
 
@@ -39,15 +32,14 @@ public:
         virtual void onTileError(Source&, const TileID&, std::exception_ptr) {};
     };
 
-    Source();
+    Source(const std::string& name,
+           SourceType,
+           const std::string& url = "",
+           std::unique_ptr<SourceInfo> = std::make_unique<SourceInfo>());
     ~Source();
 
-    void parseTileJSON(const JSValue&);
-    void parseGeoJSON(const JSValue&);
-
-    bool loaded = false;
-    void load();
-    bool isLoading() const;
+    // Returns true when the source info is loaded and all rqeuested tiles in this source have
+    // completed loading.
     bool isLoaded() const;
 
     // Request or parse all the tiles relevant for the "TransformState". This method
@@ -69,10 +61,17 @@ public:
     void setObserver(Observer* observer);
     void dumpDebugLogs() const;
 
-    SourceInfo info;
-    bool enabled = false;
+    bool isEnabled() const;
+    void enable();
+    void disable();
+
+public:
+    const std::string name;
+    const SourceType type;
+    const std::string url;
 
 private:
+    void loadInfo();
     void tileLoadingCompleteCallback(const TileID&, const TransformState&, bool collisionDebug);
     bool handlePartialTile(const TileID &id, Worker &worker);
     bool findLoadedChildren(const TileID& id, int32_t maxCoveringZoom, std::forward_list<TileID>& retain);
@@ -86,7 +85,13 @@ private:
 
     double getZoom(const TransformState &state) const;
 
-    std::unique_ptr<mapbox::geojsonvt::GeoJSONVT> geojsonvt;
+private:
+    // baseInfo stores the TileJSON information encoded into the stylesheet itself and is used as a
+    // template when creating the actual info object.
+    const std::unique_ptr<const SourceInfo> baseInfo;
+    std::unique_ptr<const SourceInfo> info;
+
+    bool enabled = false;
 
     // Stores the time when this source was most recently updated.
     TimePoint updated = TimePoint::min();

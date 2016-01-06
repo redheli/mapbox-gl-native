@@ -17,14 +17,14 @@
 using namespace mbgl;
 
 TileWorker::TileWorker(TileID id_,
-                       std::string sourceID_,
+                       const std::string& sourceName_,
                        SpriteStore& spriteStore_,
                        GlyphAtlas& glyphAtlas_,
                        GlyphStore& glyphStore_,
                        const std::atomic<TileData::State>& state_,
                        const MapMode mode_)
     : id(id_),
-      sourceID(std::move(sourceID_)),
+      sourceName(sourceName_),
       spriteStore(spriteStore_),
       glyphAtlas(glyphAtlas_),
       glyphStore(glyphStore_),
@@ -117,7 +117,7 @@ void TileWorker::parseLayer(const StyleLayer* layer, const GeometryTile& geometr
         return;
 
     // Skip this bucket if we are to not render this
-    if ((layer->source != sourceID) ||
+    if ((layer->source != sourceName) ||
         (id.z < std::floor(layer->minZoom)) ||
         (id.z >= std::ceil(layer->maxZoom)) ||
         (layer->visibility == VisibilityType::None)) {

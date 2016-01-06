@@ -56,124 +56,76 @@ void StyleParser::parseSources(const JSValue& value) {
         const JSValue& nameVal = itr->name;
         const JSValue& sourceVal = itr->value;
 
-        std::unique_ptr<Source> source = std::make_unique<Source>();
-
-        source->info.source_id = { nameVal.GetString(), nameVal.GetStringLength() };
-
         if (!sourceVal.HasMember("type")) {
-            Log::Warning(Event::ParseStyle, "source must have a type");
+            Log::Error(Event::ParseStyle, "source must have a type");
             continue;
         }
 
         const JSValue& typeVal = sourceVal["type"];
         if (!typeVal.IsString()) {
-            Log::Warning(Event::ParseStyle, "source type must have one of the enum values");
+            Log::Error(Event::ParseStyle, "source type must have one of the enum values");
             continue;
         }
 
-        source->info.type = SourceTypeClass({ typeVal.GetString(), typeVal.GetStringLength() });
+        const SourceType type = SourceTypeClass({ typeVal.GetString(), typeVal.GetStringLength() });
 
-        switch (source->info.type) {
+        // We're always going to parse the source object as a TileJSON, even if the source specifies
+        // a URL to load a TileJSON file from. This data is cumulative and once the external
+        // TileJSON is loaded, it will be merged into the SourceInfo object.
+        auto info = std::make_unique<SourceInfo>();
+        info->parseTileJSON(sourceVal);
+
+        // Sources can have URLs, either because they reference an external TileJSON file, or
+        // because reference a GeoJSON file. They don't have to have one though when all source
+        // parameters are specified inline.
+        std::string url;
+
+        switch (type) {
         case SourceType::Vector:
-            if (!parseVectorSource(*source, sourceVal)) {
-                continue;
-            }
-            break;
         case SourceType::Raster:
-            if (!parseRasterSource(*source, sourceVal)) {
-                continue;
+            if (sourceVal.HasMember("url")) {
+                const JSValue& urlVal = sourceVal["url"];
+                if (urlVal.IsString()) {
+                    url = { urlVal.GetString(), urlVal.GetStringLength() };
+                } else {
+                    Log::Error(Event::ParseStyle, "source url must be a string");
+                    continue;
+                }
             }
             break;
+
         case SourceType::GeoJSON:
-            if (!parseGeoJSONSource(*source, sourceVal)) {
+            // We should probably split this up to have URLs in the url property, and actual data
+            // in the data property. Until then, we're going to detect the content based on the
+            // object type.
+            if (sourceVal.HasMember("data")) {
+                const JSValue& dataVal = sourceVal["data"];
+                if (dataVal.IsString()) {
+                    // We need to load an external GeoJSON file
+                    url = { dataVal.GetString(), dataVal.GetStringLength() };
+                } else if (dataVal.IsObject()) {
+                    // We need to parse dataVal as a GeoJSON object
+                    info->parseGeoJSON(dataVal);
+                } else {
+                    Log::Error(Event::ParseStyle, "GeoJSON data must be a URL or an object");
+                    continue;
+                }
+            } else {
+                Log::Error(Event::ParseStyle, "GeoJSON source must have a data value");
                 continue;
             }
             break;
+
         default:
-            Log::Warning(Event::ParseStyle, "source type %s is not supported", SourceTypeClass(source->info.type).c_str());
+            Log::Error(Event::ParseStyle, "source type '%s' is not supported", typeVal.GetString());
+            continue;
         }
 
-        sourcesMap.emplace(source->info.source_id, source.get());
+        const std::string name { nameVal.GetString(), nameVal.GetStringLength() };
+        auto source = std::make_unique<Source>(name, type, url, std::move(info));
+        sourcesMap.emplace(name, source.get());
         sources.emplace_back(std::move(source));
     }
-}
-
-bool StyleParser::parseVectorSource(Source& source, const JSValue& sourceVal) {
-    // A vector tile source either specifies the URL of a TileJSON file...
-    if (sourceVal.HasMember("url")) {
-        const JSValue& urlVal = sourceVal["url"];
-
-        if (!urlVal.IsString()) {
-            Log::Warning(Event::ParseStyle, "source url must be a string");
-            return false;
-        }
-
-        source.info.url = { urlVal.GetString(), urlVal.GetStringLength() };
-
-    } else {
-        // ...or the TileJSON directly.
-        source.parseTileJSON(sourceVal);
-    }
-
-    return true;
-}
-
-bool StyleParser::parseRasterSource(Source& source, const JSValue& sourceVal) {
-    if (sourceVal.HasMember("tileSize")) {
-        const JSValue& tileSizeVal = sourceVal["tileSize"];
-
-        if (!tileSizeVal.IsUint()) {
-            Log::Warning(Event::ParseStyle, "source tileSize must be an unsigned integer");
-            return false;
-        }
-
-        unsigned int intValue = tileSizeVal.GetUint();
-        if (intValue > std::numeric_limits<uint16_t>::max()) {
-            Log::Warning(Event::ParseStyle, "values for tileSize that are larger than %d are not supported", std::numeric_limits<uint16_t>::max());
-            return false;
-        }
-
-        source.info.tile_size = intValue;
-    }
-
-    // A raster tile source either specifies the URL of a TileJSON file...
-    if (sourceVal.HasMember("url")) {
-        const JSValue& urlVal = sourceVal["url"];
-
-        if (!urlVal.IsString()) {
-            Log::Warning(Event::ParseStyle, "source url must be a string");
-            return false;
-        }
-
-        source.info.url = { urlVal.GetString(), urlVal.GetStringLength() };
-
-    } else {
-        // ...or the TileJSON directly.
-        source.parseTileJSON(sourceVal);
-    }
-
-    return true;
-}
-
-bool StyleParser::parseGeoJSONSource(Source& source, const JSValue& sourceVal) {
-    if (!sourceVal.HasMember("data")) {
-        Log::Warning(Event::ParseStyle, "GeoJSON source must have a data value");
-        return false;
-    }
-
-    const JSValue& dataVal = sourceVal["data"];
-    if (dataVal.IsString()) {
-        // We need to load an external GeoJSON file
-        source.info.url = { dataVal.GetString(), dataVal.GetStringLength() };
-    } else if (dataVal.IsObject()) {
-        // We need to parse dataVal as a GeoJSON object
-        source.parseGeoJSON(dataVal);
-    } else {
-        Log::Error(Event::ParseStyle, "GeoJSON data must be a URL or an object");
-        return false;
-    }
-
-    return true;
 }
 
 void StyleParser::parseLayers(const JSValue& value) {

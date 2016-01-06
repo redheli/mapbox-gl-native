@@ -20,7 +20,7 @@ class VectorTileData : public TileData {
 public:
     VectorTileData(const TileID&,
                    std::unique_ptr<GeometryTileMonitor> monitor,
-                   std::string sourceID,
+                   const std::string& sourceName,
                    Style&,
                    const MapMode,
                    const std::function<void()>& callback);

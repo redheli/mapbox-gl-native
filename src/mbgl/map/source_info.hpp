@@ -3,11 +3,19 @@
 
 #include <mbgl/style/types.hpp>
 #include <mbgl/util/constants.hpp>
+#include <mbgl/util/rapidjson.hpp>
 
 #include <array>
 #include <vector>
 #include <string>
+#include <memory>
 #include <cstdint>
+
+namespace mapbox {
+namespace geojsonvt {
+class GeoJSONVT;
+} // namespace geojsonvt
+} // namespace mapbox
 
 namespace mbgl {
 
@@ -15,8 +23,14 @@ class TileID;
 
 class SourceInfo {
 public:
-    SourceType type = SourceType::Vector;
-    std::string url;
+    ~SourceInfo();
+
+    std::string tileURL(const TileID&, float pixelRatio) const;
+
+    void parseTileJSON(const JSValue&);
+    void parseGeoJSON(const JSValue&);
+
+public:
     std::vector<std::string> tiles;
     uint16_t tile_size = util::tileSize;
     uint16_t min_zoom = 0;
@@ -24,9 +38,8 @@ public:
     std::string attribution;
     std::array<float, 3> center = { { 0, 0, 0 } };
     std::array<float, 4> bounds = { { -180, -90, 180, 90 } };
-    std::string source_id = "";
 
-    std::string tileURL(const TileID&, float pixelRatio) const;
+    std::shared_ptr<mapbox::geojsonvt::GeoJSONVT> geojsonvt;
 };
 
 } // namespace mbgl
