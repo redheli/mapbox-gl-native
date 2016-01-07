@@ -43,6 +43,7 @@ VectorTileData::VectorTileData(const TileID& id_,
 
         if (!tile) {
             // This is a 404 response. We're treating these as empty tiles.
+            workRequest.reset();
             state = State::parsed;
             buckets.clear();
             callback();
