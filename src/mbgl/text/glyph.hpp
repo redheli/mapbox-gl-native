@@ -80,6 +80,8 @@ public:
 
     // Glyph metrics
     GlyphMetrics metrics;
+
+    SDFGlyph& operator=(const SDFGlyph& rhs);
 };
 
 } // end namespace mbgl

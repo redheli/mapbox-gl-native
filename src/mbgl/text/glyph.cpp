@@ -11,4 +11,11 @@ GlyphRange getGlyphRange(char32_t glyph) {
     return { start, end };
 }
 
+SDFGlyph& SDFGlyph::operator=(const SDFGlyph& rhs) {
+    id = rhs.id;
+    bitmap = rhs.bitmap;
+    metrics = rhs.metrics;
+    return *this;
+}
+
 } // namespace mbgl

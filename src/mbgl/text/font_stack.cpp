@@ -1,13 +1,36 @@
 #include <mbgl/text/font_stack.hpp>
 #include <cassert>
+#include <mbgl/platform/log.hpp>
 #include <mbgl/util/math.hpp>
 
 namespace mbgl {
 
 void FontStack::insert(uint32_t id, const SDFGlyph &glyph) {
-    metrics.emplace(id, glyph.metrics);
-    bitmaps.emplace(id, glyph.bitmap);
-    sdfs.emplace(id, glyph);
+    auto it = metrics.find(id);
+    if (it == metrics.end()) {
+        // Glyph doesn't exist yet.
+        metrics.emplace(id, glyph.metrics);
+        sdfs.emplace(id, glyph);
+    } else if (it->second == glyph.metrics) {
+        // Check that the SDFGlyph remained the same and warn otherwise.
+        const auto sdf_it = sdfs.find(id);
+        if (sdf_it != sdfs.end()) {
+            if (sdf_it->second.bitmap != glyph.bitmap) {
+                // The actual bitmap was updated; this is unsupported.
+                Log::Warning(Event::Glyph, "Modified glyph changed bitmap represenation");
+            }
+            // At least try to update it in case it's currently unsused.
+            // If it is already used; we won't attempt to update the glyph atlas texture.
+            sdf_it->second = glyph;
+        } else {
+            Log::Warning(Event::Glyph, "Glyph information was not present");
+            sdfs.emplace(id, glyph);
+        }
+    } else {
+        // The metrics were updated; this is unsupported.
+        Log::Warning(Event::Glyph, "Modified glyph has different metrics");
+        return;
+    }
 }
 
 const std::map<uint32_t, GlyphMetrics> &FontStack::getMetrics() const {

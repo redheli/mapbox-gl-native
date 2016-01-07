@@ -18,7 +18,6 @@ public:
                   float verticalAlign, float justify) const;
 
 private:
-    std::map<uint32_t, std::string> bitmaps;
     std::map<uint32_t, GlyphMetrics> metrics;
     std::map<uint32_t, SDFGlyph> sdfs;
 };
