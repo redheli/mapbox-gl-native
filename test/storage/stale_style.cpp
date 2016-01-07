@@ -47,8 +47,9 @@ public:
         if (algo::starts_with(resource.url, prefix)) {
             const auto filename = "test/fixtures/"s + resource.url.substr(len(prefix) + 1);
             try {
+                auto data = std::make_shared<std::string>(util::read_file(filename));
                 response = std::make_unique<Response>();
-                response->data = std::make_shared<std::string>(util::read_file(filename));
+                response->data = data;
                 response->expires = Seconds::zero();
             } catch (const std::exception& e) {
                 Log::Error(Event::Database, "%s", e.what());
@@ -64,8 +65,9 @@ public:
     void put(const Resource &, std::shared_ptr<const Response>, Hint) override {}
 };
 
+const static auto display = std::make_shared<mbgl::HeadlessDisplay>();
+
 TEST_F(Storage, StaleStyle) {
-    auto display = std::make_shared<mbgl::HeadlessDisplay>();
     HeadlessView view(display, 1);
     StaleCache cache;
     OnlineFileSource fileSource(&cache, test::getFileSourceRoot());
@@ -75,3 +77,14 @@ TEST_F(Storage, StaleStyle) {
 
     checkRendering(map, "stale_style", 1000ms);
 }
+
+ TEST_F(Storage, StaleStyleAndTileJSON) {
+     HeadlessView view(display, 1);
+     StaleCache cache;
+     OnlineFileSource fileSource(&cache, test::getFileSourceRoot());
+
+     Map map(view, fileSource, MapMode::Still);
+     map.setStyleURL(std::string(prefix) + "/stale/style_and_tilejson.json");
+
+     checkRendering(map, "stale_style_and_tilejson", 2000ms);
+ }

@@ -90,6 +90,7 @@ private:
     // template when creating the actual info object.
     const std::unique_ptr<const SourceInfo> baseInfo;
     std::unique_ptr<const SourceInfo> info;
+    std::shared_ptr<const std::string> infoData;
 
     bool enabled = false;
 

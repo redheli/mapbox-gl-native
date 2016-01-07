@@ -83,14 +83,15 @@ void Source::loadInfo() {
     // URL may either be a TileJSON file, or a GeoJSON file.
     FileSource* fs = util::ThreadContext::getFileSource();
     req = fs->request({ Resource::Kind::Source, url }, [this](Response res) {
-        if (res.stale) {
-            // Only handle fresh responses.
-            return;
-        }
-        req = nullptr;
-
         if (res.error) {
             observer->onSourceError(*this, std::make_exception_ptr(std::runtime_error(res.error->message)));
+            return;
+        }
+
+        const bool idential = infoData == res.data || (infoData && *infoData == *res.data);
+        infoData = res.data;
+        if (idential) {
+            // We got the same data back as last time. Abort early.
             return;
         }
 
@@ -119,6 +120,34 @@ void Source::loadInfo() {
         } else if (type == SourceType::GeoJSON) {
             newInfo->parseGeoJSON(d);
         }
+
+        // Check whether previous information specifies different tile
+        if (info) {
+            if (info->tiles != newInfo->tiles || info->geojsonvt != newInfo->geojsonvt) {
+                // Tile endpoint changed: We need to reload all tiles to make sure we load the right
+                // data. Delete all tile information so that the update can load the new tiles.
+                tilePtrs.clear();
+                tileDataMap.clear();
+                tiles.clear();
+                cache.clear();
+            }
+
+            // Tile size changed: We need to recalculate the tiles we need to load because we
+            // might have to load tiles for a different zoom level
+            // This is done automatically when we trigger the onSourceLoaded observer below.
+
+            // Min/Max zoom changed: We need to recalculate what tiles to load, if we have tiles
+            // loaded that are outside the new zoom range
+            // This is done automatically when we trigger the onSourceLoaded observer below.
+
+            // Attribution changed: We need to notify the embedding application that this
+            // changed. See https://github.com/mapbox/mapbox-gl-native/issues/2723
+            // This is not yet implemented.
+
+            // Center/bounds changed: We're not using these values currently
+        }
+
+        // Now replace the actual info object
         info = std::move(newInfo);
 
         observer->onSourceLoaded(*this);
