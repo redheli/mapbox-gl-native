@@ -40,15 +40,10 @@ void SpriteStore::setURL(const std::string& url) {
     FileSource* fs = util::ThreadContext::getFileSource();
     loader->jsonRequest = fs->request({ Resource::Kind::SpriteJSON, jsonURL },
                                       [this, jsonURL](Response res) {
-        if (res.stale) {
-            // Only handle fresh responses.
-            return;
-        }
-        loader->jsonRequest = nullptr;
-
         if (res.error) {
             observer->onSpriteError(std::make_exception_ptr(std::runtime_error(res.error->message)));
-        } else {
+        } else if (loader->json != res.data || (loader->json && *loader->json != *res.data)) {
+            // Only trigger a sprite loaded event we got first time data, or new data.
             loader->json = res.data;
             emitSpriteLoadedIfComplete();
         }
@@ -57,15 +52,9 @@ void SpriteStore::setURL(const std::string& url) {
     loader->spriteRequest =
         fs->request({ Resource::Kind::SpriteImage, spriteURL },
                     [this, spriteURL](Response res) {
-            if (res.stale) {
-                // Only handle fresh responses.
-                return;
-            }
-            loader->spriteRequest = nullptr;
-
             if (res.error) {
                 observer->onSpriteError(std::make_exception_ptr(std::runtime_error(res.error->message)));
-            } else {
+            } else if (loader->image != res.data || (loader->image && *loader->image != *res.data)) {
                 loader->image = res.data;
                 emitSpriteLoadedIfComplete();
             }

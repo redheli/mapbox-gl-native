@@ -88,3 +88,14 @@ TEST_F(Storage, StaleStyle) {
 
      checkRendering(map, "stale_style_and_tilejson", 2000ms);
  }
+
+ TEST_F(Storage, StaleStyleAndSprite) {
+     HeadlessView view(display, 1);
+     StaleCache cache;
+     OnlineFileSource fileSource(&cache, test::getFileSourceRoot());
+
+     Map map(view, fileSource, MapMode::Still);
+     map.setStyleURL(std::string(prefix) + "/stale/style_and_sprite.json");
+
+     checkRendering(map, "stale_style_and_sprite", 2000ms);
+ }
