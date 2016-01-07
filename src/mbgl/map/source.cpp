@@ -523,7 +523,7 @@ void Source::tileLoadingCompleteCallback(const TileID& id, const TransformState&
         return;
     }
 
-    if (tileData->getState() == TileData::State::obsolete && tileData->getError()) {
+    if (tileData->hasError()) {
         observer->onTileError(*this, id, tileData->getError());
         return;
     }
