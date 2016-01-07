@@ -275,7 +275,15 @@ void OnlineFileSource::Impl::startRealRequest(OnlineFileRequestImpl& request) {
     auto callback = [this, &request](std::shared_ptr<const Response> response) {
         request.realRequest = nullptr;
 
-        if (cache) {
+        // Only update the cache for successful or 404 responses.
+        // In particular, we don't want to write a Canceled request, or one that failed due to
+        // connection errors to the cache. Server errors are hopefully also temporary, so we're not
+        // caching them either.
+        const bool cacheable =
+            !request.resource.isAsset &&
+            (!response->error || (response->error->reason == Response::Error::Reason::NotFound));
+
+        if (cache && cacheable) {
             // Store response in database. Make sure we only refresh the expires column if the data
             // didn't change.
             FileCache::Hint hint = FileCache::Hint::Full;
