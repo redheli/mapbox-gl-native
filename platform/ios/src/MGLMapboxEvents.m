@@ -543,7 +543,17 @@ const NSTimeInterval MGLFlushInterval = 60;
             [request setHTTPBody:jsonData];
 
             // Send non blocking HTTP Request to server
-            [[_session dataTaskWithRequest:request] resume];
+            if (strongSelf.session) {
+                [[strongSelf.session dataTaskWithRequest:request] resume];
+            } else {
+                // Session is invalidated when telemetry is paused, which means
+                // we have to manually manage its lifecycle here for the turnstile.
+                strongSelf.session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
+                                                                   delegate:strongSelf
+                                                              delegateQueue:nil];
+                [[strongSelf.session dataTaskWithRequest:request] resume];
+                [strongSelf.session finishTasksAndInvalidate];
+            }
         }
     });
 }
