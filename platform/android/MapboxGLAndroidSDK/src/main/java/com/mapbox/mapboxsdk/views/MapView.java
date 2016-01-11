@@ -1,6 +1,7 @@
 package com.mapbox.mapboxsdk.views;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Dialog;
@@ -120,7 +121,7 @@ public final class MapView extends FrameLayout {
     private static final String TAG = "MapView";
 
     // Used for animation
-    private static final long ANIMATION_DURATION = 300;
+    public static final long ANIMATION_DURATION = 300;
 
     // Used for saving instance state
     private static final String STATE_CENTER_COORDINATE = "centerCoordinate";
@@ -180,8 +181,8 @@ public final class MapView extends FrameLayout {
      *
      * @see MapView#setTilt(Double, Long)
      */
-    private static final double MINIMUM_TILT = 0;
-    private static final double MAXIMUM_TILT = 60;
+    public static final double MINIMUM_TILT = 0;
+    public static final double MAXIMUM_TILT = 60;
 
     //
     // Instance members
@@ -876,7 +877,8 @@ public final class MapView extends FrameLayout {
 
             // User location
             try {
-                setMyLocationEnabled(typedArray.getBoolean(R.styleable.MapView_my_location_enabled, false));
+               //noinspection ResourceType
+               setMyLocationEnabled(typedArray.getBoolean(R.styleable.MapView_my_location_enabled, false));
             }catch (SecurityException ignore){
                 // User did not accept location permissions
             }
@@ -2663,7 +2665,7 @@ public final class MapView extends FrameLayout {
         setVisibleCoordinateBounds(coordinates, padding, direction, animated ? ANIMATION_DURATION : 0l);
     }
 
-    private void setVisibleCoordinateBounds(LatLng[] coordinates, RectF padding, double direction, long duration) {
+    public void setVisibleCoordinateBounds(LatLng[] coordinates, RectF padding, double direction, long duration) {
         mNativeMapView.setVisibleCoordinateBounds(coordinates, new RectF(padding.left / mScreenDensity,
                         padding.top / mScreenDensity, padding.right / mScreenDensity, padding.bottom / mScreenDensity),
                 direction, duration);
@@ -2940,6 +2942,7 @@ public final class MapView extends FrameLayout {
 
         // Must always return true otherwise all events are ignored
         @Override
+        @SuppressLint("ResourceType")
         public boolean onDown(MotionEvent event) {
             // Show the zoom controls
             if (mZoomControlsEnabled && mZoomEnabled) {
@@ -2948,7 +2951,10 @@ public final class MapView extends FrameLayout {
 
             // Disable tracking mode if a gesture occurs
             try {
+                //noinspection ResourceType
                 setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
+
+                //noinspection ResourceType
                 setMyBearingTrackingMode(MyBearingTracking.NONE);
             }catch(SecurityException ignore){
                 // User did not accept location permissions
