@@ -276,7 +276,7 @@ final class NativeMapView {
     }
 
     public void setScale(double scale) {
-        setScale(scale, -1.0, -1.0);
+        setScale(scale, Double.NaN, Double.NaN);
     }
 
     public void setScale(double scale, double cx, double cy) {

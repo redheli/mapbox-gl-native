@@ -1291,11 +1291,11 @@ void JNICALL nativeSetVisibleCoordinateBounds(JNIEnv *env, jobject obj, jlong na
     }
 
     mbgl::CameraOptions cameraOptions = nativeMapView->getMap().cameraForLatLngs(segment, mbglInsets);
-    mbgl::AnimationOptions animationOptions;
     if (direction >= 0) {
         // convert from degrees to radians
-        animationOptions.angle = (-direction * M_PI) / 180;
+        cameraOptions.angle = (-direction * M_PI) / 180;
     }
+    mbgl::AnimationOptions animationOptions;
     if (duration > 0) {
         animationOptions.duration = std::chrono::milliseconds(duration);
         // equivalent to kCAMediaTimingFunctionDefault in iOS
