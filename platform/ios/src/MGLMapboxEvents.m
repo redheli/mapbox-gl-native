@@ -543,16 +543,18 @@ const NSTimeInterval MGLFlushInterval = 60;
             [request setHTTPBody:jsonData];
 
             // Send non blocking HTTP Request to server
-            if (strongSelf.session) {
+            if ( ! strongSelf.paused) {
                 [[strongSelf.session dataTaskWithRequest:request] resume];
             } else {
-                // Session is invalidated when telemetry is paused, which means
-                // we have to manually manage its lifecycle here for the turnstile.
-                strongSelf.session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
-                                                                   delegate:strongSelf
-                                                              delegateQueue:nil];
-                [[strongSelf.session dataTaskWithRequest:request] resume];
-                [strongSelf.session finishTasksAndInvalidate];
+                for (MGLMutableMapboxEventAttributes *event in events) {
+                    if ([event[@"event"] isEqualToString:MGLEventTypeAppUserTurnstile]) {
+                        NSURLSession *temporarySession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
+                                                                                       delegate:strongSelf
+                                                                                  delegateQueue:nil];
+                        [[temporarySession dataTaskWithRequest:request] resume];
+                        [temporarySession finishTasksAndInvalidate];
+                    }
+                }
             }
         }
     });
@@ -890,7 +892,7 @@ const NSTimeInterval MGLFlushInterval = 60;
             completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]);
         }
     }
-    
+
 }
 
 @end
