@@ -7,9 +7,7 @@
 namespace mbgl {
 
 std::string SourceInfo::tileURL(const TileID& id, float pixelRatio) const {
-    std::string result = tiles.at(0);
-    result = util::mapbox::normalizeTileURL(result, url, type);
-    result = util::replaceTokens(result, [&](const std::string& token) -> std::string {
+    return util::replaceTokens(tiles.at(0), [&](const std::string& token) -> std::string {
         if (token == "z") {
             return util::toString(std::min(id.z, static_cast<int8_t>(max_zoom)));
         } else if (token == "x") {
@@ -27,7 +25,6 @@ std::string SourceInfo::tileURL(const TileID& id, float pixelRatio) const {
             return "";
         }
     });
-    return result;
 }
 
 } // namespace mbgl
