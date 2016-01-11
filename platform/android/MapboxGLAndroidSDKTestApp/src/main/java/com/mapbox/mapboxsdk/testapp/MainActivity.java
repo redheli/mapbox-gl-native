@@ -334,6 +334,10 @@ public class MainActivity extends AppCompatActivity {
                                 mMapView.setCompassEnabled(!mMapView.isCompassEnabled());
                                 return true;
 
+                            case R.id.action_mapboxmap:
+                                startActivity(new Intent(getApplicationContext(), MapboxMapActivity.class));
+                                return true;
+
                             case R.id.action_info_window_adapter:
                                 startActivity(new Intent(getApplicationContext(), InfoWindowAdapterActivity.class));
                                 return true;
