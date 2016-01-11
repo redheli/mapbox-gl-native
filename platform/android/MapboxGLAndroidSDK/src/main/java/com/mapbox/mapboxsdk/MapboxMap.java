@@ -7,7 +7,6 @@ import android.graphics.RectF;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.FloatRange;
-import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresPermission;
@@ -28,8 +27,8 @@ import com.mapbox.mapboxsdk.camera.CameraUpdate;
 import com.mapbox.mapboxsdk.constants.MyBearingTracking;
 import com.mapbox.mapboxsdk.constants.MyLocationTracking;
 import com.mapbox.mapboxsdk.constants.Style;
-import com.mapbox.mapboxsdk.geometry.CoordinateBounds;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.geometry.LatLngZoom;
 import com.mapbox.mapboxsdk.layers.CustomLayer;
 import com.mapbox.mapboxsdk.utils.ApiAccess;
@@ -1116,8 +1115,8 @@ public class MapboxMap {
      * @param bounds The bounds that the viewport will show in its entirety.
      */
     @UiThread
-    public void setVisibleCoordinateBounds(@NonNull CoordinateBounds bounds) {
-        setVisibleCoordinateBounds(bounds, false);
+    public void setLatLngBounds(@NonNull LatLngBounds bounds) {
+        setLatLngBounds(bounds, false);
     }
 
     /**
@@ -1127,8 +1126,8 @@ public class MapboxMap {
      * @param animated If true, animates the change. If false, immediately changes the map.
      */
     @UiThread
-    public void setVisibleCoordinateBounds(@NonNull CoordinateBounds bounds, boolean animated) {
-        setVisibleCoordinateBounds(bounds, new RectF(), animated);
+    public void setLatLngBounds(@NonNull LatLngBounds bounds, boolean animated) {
+        setLatLngBounds(bounds, new RectF(), animated);
     }
 
     /**
@@ -1140,15 +1139,18 @@ public class MapboxMap {
      * @param animated If true, animates the change. If false, immediately changes the map.
      */
     @UiThread
-    public void setVisibleCoordinateBounds(@NonNull CoordinateBounds bounds, @NonNull RectF padding, boolean animated) {
-        LatLng[] coordinates = {
-                new LatLng(bounds.getNorthEast().getLatitude(), bounds.getSouthWest().getLongitude()),
-                bounds.getSouthWest(),
-                new LatLng(bounds.getSouthWest().getLatitude(), bounds.getNorthEast().getLongitude()),
-                bounds.getNorthEast()
+    public void setLatLngBounds(@NonNull LatLngBounds bounds, @NonNull RectF padding, boolean animated) {
+        LatLng northEast = new LatLng(bounds.getLatNorth(), bounds.getLonEast());
+        LatLng southWest = new LatLng(bounds.getLatSouth(), bounds.getLonWest());
 
+        LatLng[] coordinates = {
+                new LatLng(northEast.getLatitude(),southWest.getLongitude()),
+                southWest,
+                new LatLng(southWest.getLatitude(),northEast.getLongitude()),
+                northEast
         };
-        setVisibleCoordinateBounds(coordinates, padding, animated);
+
+        setLatLngBounds(coordinates, padding, animated);
     }
 
     /**
@@ -1160,15 +1162,15 @@ public class MapboxMap {
      * @param animated    If true, animates the change. If false, immediately changes the map.
      */
     @UiThread
-    public void setVisibleCoordinateBounds(@NonNull LatLng[] coordinates, @NonNull RectF padding, boolean animated) {
-        setVisibleCoordinateBounds(coordinates, padding, getDirection(), animated);
+    public void setLatLngBounds(@NonNull LatLng[] coordinates, @NonNull RectF padding, boolean animated) {
+        setLatLngBounds(coordinates, padding, getDirection(), animated);
     }
 
-    private void setVisibleCoordinateBounds(LatLng[] coordinates, RectF padding, double direction, boolean animated) {
-        setVisibleCoordinateBounds(coordinates, padding, direction, animated ? MapView.ANIMATION_DURATION : 0l);
+    private void setLatLngBounds(LatLng[] coordinates, RectF padding, double direction, boolean animated) {
+        setLatLngBounds(coordinates, padding, direction, animated ? MapView.ANIMATION_DURATION : 0l);
     }
 
-    private void setVisibleCoordinateBounds(LatLng[] coordinates, RectF padding, double direction, long duration) {
+    private void setLatLngBounds(LatLng[] coordinates, RectF padding, double direction, long duration) {
         mMapView.setVisibleCoordinateBounds(coordinates, padding, direction, duration);
     }
 
