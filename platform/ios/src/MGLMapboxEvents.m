@@ -546,7 +546,7 @@ const NSTimeInterval MGLFlushInterval = 60;
             if ( ! strongSelf.paused) {
                 [[strongSelf.session dataTaskWithRequest:request] resume];
             } else {
-                for (MGLMutableMapboxEventAttributes *event in events) {
+                for (MGLMapboxEventAttributes *event in events) {
                     if ([event[@"event"] isEqualToString:MGLEventTypeAppUserTurnstile]) {
                         NSURLSession *temporarySession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
                                                                                        delegate:strongSelf
