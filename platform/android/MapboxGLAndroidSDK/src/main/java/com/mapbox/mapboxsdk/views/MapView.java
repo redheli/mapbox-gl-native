@@ -58,6 +58,8 @@ import android.widget.ZoomButtonsController;
 import com.almeros.android.multitouch.gesturedetectors.RotateGestureDetector;
 import com.almeros.android.multitouch.gesturedetectors.ShoveGestureDetector;
 import com.almeros.android.multitouch.gesturedetectors.TwoFingerGestureDetector;
+import com.mapbox.mapboxsdk.MapboxMap;
+import com.mapbox.mapboxsdk.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.R;
 import com.mapbox.mapboxsdk.annotations.Annotation;
 import com.mapbox.mapboxsdk.annotations.Icon;
@@ -4199,6 +4201,16 @@ public final class MapView extends FrameLayout {
     @UiThread
     public void invalidateCustomLayers() {
         mNativeMapView.update();
+    }
+
+    /**
+     * Sets a callback object which will be triggered when the {@link MapboxMap} instance is ready to be used.
+     *
+     * @param callback 	The callback object that will be triggered when the map is ready to be used.
+     */
+    @UiThread
+    public void getMapAsync(@NonNull OnMapReadyCallback callback){
+        callback.onMapReady(new MapboxMap(this));
     }
 
     private void setWidgetGravity(@NonNull final View view, int gravity) {
