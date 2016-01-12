@@ -132,8 +132,16 @@ RunLoop::~RunLoop() {
 #if UV_VERSION_MAJOR == 0 && UV_VERSION_MINOR <= 10
     uv_loop_delete(impl->loop);
 #else
-    if (uv_loop_close(impl->loop) == UV_EBUSY) {
-        throw std::runtime_error("Failed to close loop.");
+    while (true) {
+        int ret = uv_loop_close(impl->loop);
+
+        if (ret == 0) {
+            break;
+        } else if (ret == UV_EBUSY) {
+            run();
+        } else {
+            throw std::runtime_error("Failed to close loop.");
+        }
     }
     delete impl->loop;
 #endif

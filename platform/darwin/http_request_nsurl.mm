@@ -147,6 +147,8 @@ void HTTPNSURLRequest::handleResponse() {
 }
 
 void HTTPNSURLRequest::cancel() {
+    // FIXME: Apparently we are not destroying the HTTP request
+    // immediately when canceling. See #3511.
     cancelled = true;
 
     if (task) {
