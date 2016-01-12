@@ -321,8 +321,7 @@ void OnlineFileRequestImpl::scheduleRealRequest(OnlineFileSource::Impl& impl, bo
 
     realRequestTimer.start(timeout, Duration::zero(), [this, &impl] {
         assert(!realRequest);
-
-        auto callback = [this, &impl](std::shared_ptr<const Response> response_) {
+        realRequest = impl.httpContext->createRequest(resource.url, [this, &impl](std::shared_ptr<const Response> response_) {
             realRequest = nullptr;
 
             // Only update the cache for successful or 404 responses.
@@ -354,9 +353,7 @@ void OnlineFileRequestImpl::scheduleRealRequest(OnlineFileSource::Impl& impl, bo
             }
 
             scheduleRealRequest(impl);
-        };
-
-        realRequest = impl.httpContext->createRequest(resource.url, callback, response);
+        }, response);
     });
 }
 
