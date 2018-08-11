@@ -30,6 +30,8 @@
 #include <mbgl/util/string.hpp>
 #include <mbgl/util/logging.hpp>
 
+#include <iostream>
+
 namespace mbgl {
 
 using namespace style;
@@ -84,6 +86,7 @@ void Renderer::Impl::setObserver(RendererObserver* observer_) {
 }
 
 void Renderer::Impl::render(const UpdateParameters& updateParameters) {
+    std::cout<<"Renderer::Impl::render"<<std::endl;
     if (updateParameters.mode != MapMode::Continuous) {
         // Reset zoom history state.
         zoomHistory.first = true;
