@@ -13,6 +13,7 @@
 
 #include <cstdio>
 #include <cmath>
+#include <iostream>
 
 namespace mbgl {
 
@@ -56,6 +57,7 @@ void Transform::resize(const Size size) {
     observer.onCameraWillChange(MapObserver::CameraChangeMode::Immediate);
 
     state.size = size;
+    std::cout<<"resize: "<<size.width<<" "<<size.height<<std::endl;
     state.constrain(state.scale, state.x, state.y);
 
     observer.onCameraDidChange(MapObserver::CameraChangeMode::Immediate);
