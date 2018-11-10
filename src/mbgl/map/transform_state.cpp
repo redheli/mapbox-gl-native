@@ -17,6 +17,10 @@ TransformState::TransformState(ConstrainMode constrainMode_, ViewportMode viewpo
 #pragma mark - Matrix
 
 void TransformState::matrixFor(mat4& matrix, const UnwrappedTileID& tileID) const {
+    // tile coordinate range
+    // zoom 0 , 2^0 = 1, total 1*1 = 1
+    // zoom 1 , 2^1 = 2, total 2*2 = 4
+    // zoom 8 , 2^18= 256, total 256*256
     const uint64_t tileScale = 1ull << tileID.canonical.z;
     const double s = Projection::worldSize(scale) / tileScale;
 
@@ -392,6 +396,7 @@ void TransformState::setLatLngZoom(const LatLng& latLng, double zoom) {
     const double m = 1 - 1e-15;
     const double f = util::clamp(std::sin(util::DEG2RAD * constrained.latitude()), -m, m);
 
+    // convert lat lng to Spherical Mercator projection, but earth radius is newWorldSize
     ScreenCoordinate point = {
         -constrained.longitude() * Bc,
         0.5 * Cc * std::log((1 + f) / (1 - f)),
