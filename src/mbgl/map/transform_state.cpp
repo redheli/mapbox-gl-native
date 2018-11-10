@@ -75,6 +75,7 @@ void TransformState::getProjMatrix(mat4& projMatrix, uint16_t nearZ, bool aligne
         projMatrix[9] = ySkew;
     }
 
+    // why z?
     matrix::scale(projMatrix, projMatrix, 1, 1,
                   1.0 / Projection::getMetersPerPixelAtLatitude(getLatLng(LatLng::Unwrapped).latitude(), getZoom()));
 
@@ -328,6 +329,7 @@ LatLng TransformState::screenCoordinateToLatLng(const ScreenCoordinate& point, L
 mat4 TransformState::coordinatePointMatrix(double z) const {
     mat4 proj;
     getProjMatrix(proj);
+    // s is single tile size
     float s = Projection::worldSize(scale) / std::pow(2, z);
     matrix::scale(proj, proj, s, s, 1);
     matrix::multiply(proj, getPixelMatrix(), proj);

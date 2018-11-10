@@ -34,6 +34,8 @@ optional<FeatureIdentifier> VectorTileFeature::getID() const {
 }
 
 GeometryCollection VectorTileFeature::getGeometries() const {
+    // feature.getExtent() extent from vector tile 4096
+    // util::EXTENT 8192, still not understand why 8192
     const float scale = float(util::EXTENT) / feature.getExtent();
     auto lines = feature.getGeometries<GeometryCollection>(scale);
     if (feature.getVersion() >= 2 || feature.getType() != mapbox::vector_tile::GeomType::POLYGON) {
