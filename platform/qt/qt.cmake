@@ -111,6 +111,7 @@ target_link_libraries(mbgl-qt
 if(WITH_QT_4)
     include(platform/qt/qt4.cmake)
 else()
+    message(STATUS "qt555555555555555555555555555555555")
     include(platform/qt/qt5.cmake)
 endif()
 

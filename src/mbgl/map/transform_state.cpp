@@ -22,7 +22,7 @@ void TransformState::matrixFor(mat4& matrix, const UnwrappedTileID& tileID) cons
     // zoom 1 , 2^1 = 2, total 2*2 = 4
     // zoom 8 , 2^18= 256, total 256*256
     const uint64_t tileScale = 1ull << tileID.canonical.z;
-    const double s = Projection::worldSize(scale) / tileScale;
+    const double s = Projection::worldSize(scale) / tileScale; // each tile size
 
     matrix::identity(matrix);
     matrix::translate(matrix, matrix,
