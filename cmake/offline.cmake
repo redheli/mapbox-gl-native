@@ -39,3 +39,19 @@ xcode_create_scheme(
         "--token="
         "--output=offline.db"
 )
+
+
+#
+add_executable(test-actor-model
+    bin/test-actor-model.cpp
+)
+target_sources(test-actor-model
+    PRIVATE platform/default/mbgl/util/default_styles.hpp
+)
+
+target_link_libraries(test-actor-model
+    PUBLIC mbgl-core
+    PRIVATE mbgl-filesource
+    PRIVATE mbgl-loop-uv
+)
+

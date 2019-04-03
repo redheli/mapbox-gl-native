@@ -7,6 +7,7 @@
 #include <mbgl/util/run_loop.hpp>
 #include <mbgl/util/util.hpp>
 
+#include <iostream>
 #include <cassert>
 #include <future>
 #include <memory>
@@ -89,6 +90,7 @@ public:
 
         loop->stop();
         thread.join();
+        std::cout<<"~~~~~~Thread"<<std::endl;
     }
 
     // Returns a non-owning reference to `Object` that

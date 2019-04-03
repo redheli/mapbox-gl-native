@@ -251,6 +251,7 @@ std::unique_ptr<AsyncRequest> DefaultFileSource::request(const Resource& resourc
 
     req->onCancel([fs = impl->actor(), req = req.get()] () mutable { fs.invoke(&Impl::cancel, req); });
 
+    // send to loop thread to get data
     impl->actor().invoke(&Impl::request, req.get(), resource, req->actor());
 
     return std::move(req);
