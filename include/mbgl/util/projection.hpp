@@ -44,6 +44,9 @@ public:
         return scale * util::tileSize;
     }
 
+    // calculate radius at latitude = earth_radius*cos(latitude)
+    // perimeter 2*pi*radius
+    // pixel per meter: perimeter / worldsize
     static double getMetersPerPixelAtLatitude(double lat, double zoom) {
         const double constrainedZoom = util::clamp(zoom, util::MIN_ZOOM, util::MAX_ZOOM);
         const double constrainedScale = std::pow(2.0, constrainedZoom);
@@ -79,6 +82,7 @@ public:
     }
 
     //Returns point on tile
+    // project lat lng to tile id
     static Point<double> project(const LatLng& latLng, int32_t zoom) {
         return project_(latLng, 1 << zoom);
     }
@@ -93,6 +97,8 @@ public:
     }
 
 private:
+    // convert to spherical mercator ,normally worldSize is the half perimeter of the earth, it is 20037508.34
+    // https://gist.github.com/onderaltintas/6649521
     static Point<double> project_(const LatLng& latLng, double worldSize) {
         const double latitude = util::clamp(latLng.latitude(), -util::LATITUDE_MAX, util::LATITUDE_MAX);
         return Point<double> {

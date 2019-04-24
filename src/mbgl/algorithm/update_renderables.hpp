@@ -72,7 +72,7 @@ void updateRenderables(GetTileFn getTile,
                     tile = getTile(childDataTileID);
                     if (tile && tile->isRenderable()) {
                         retainTile(*tile, TileNecessity::Optional);
-                        renderTile(childDataTileID.toUnwrapped(), *tile);
+                        renderTile(childDataTileID.toUnwrapped(), *tile); // do nothing
                     } else {
                         // At least one child tile doesn't exist, so we are going to look for
                         // parents as well.

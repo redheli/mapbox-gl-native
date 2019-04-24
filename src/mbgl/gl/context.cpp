@@ -245,6 +245,7 @@ UniqueBuffer Context::createVertexBuffer(const void* data, std::size_t size, con
     BufferID id = 0;
     MBGL_CHECK_ERROR(glGenBuffers(1, &id));
     UniqueBuffer result { std::move(id), { this } };
+    // State<> call set() to glBindBuffer(GL_ARRAY_BUFFER, id)
     vertexBuffer = result;
     MBGL_CHECK_ERROR(glBufferData(GL_ARRAY_BUFFER, size, data, static_cast<GLenum>(usage)));
     return result;
