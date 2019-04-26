@@ -44,11 +44,11 @@ public:
         std::cout<<"B thread id "<<tid<<std::endl<<std::flush;
 
     }
-    void do_calc(std::string s, ActorRef<A> b)
+    void do_calc(std::string s, ActorRef<A> a)
     {
         assert(tid == std::this_thread::get_id());
         std::cout<<"B do_calc "<<std::this_thread::get_id()<<" "<<s<<std::endl<<std::flush;
-        b.invoke(&A::add,2);
+        a.invoke(&A::add,2);
     }
 
 private:
@@ -56,17 +56,15 @@ private:
 };
 
 int main(int /*argc*/, char **/**argv[]*/) {
-    std::cout<<"test actor model "<<std::this_thread::get_id()<<std::endl<<std::flush;
+    std::cout<<"Main Thread Id "<<std::this_thread::get_id()<<std::endl<<std::flush;
     Thread<A> thread_a("test_a");
     std::this_thread::sleep_for(0.2s);
     Thread<B> thread_b("test_b");
-//    thread_b.object.do_calc("aaa",1);  // can not get object from Thread
 
     auto a_ObjectRef = thread_a.actor();
     auto b_ObjectRef = thread_b.actor();
 
     b_ObjectRef.invoke(&B::do_calc,"msg to B",a_ObjectRef);
 
-    std::cout<<"--- Done"<<std::endl<<std::flush;
     return 0;
 }

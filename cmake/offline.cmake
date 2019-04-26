@@ -55,3 +55,34 @@ target_link_libraries(test-actor-model
     PRIVATE mbgl-loop-uv
 )
 
+#
+add_executable(test-render
+    bin/test-render.cpp
+    test/src/mbgl/test/util.cpp
+)
+target_sources(test-render
+    PRIVATE platform/default/mbgl/util/default_styles.hpp
+)
+target_include_directories(test-render
+    PRIVATE src
+    PRIVATE test/include
+    PRIVATE test/src
+    PRIVATE platform/default
+    PRIVATE platform/linux
+)
+target_link_libraries(test-render
+    PUBLIC mbgl-core
+    PRIVATE mbgl-filesource
+    PRIVATE mbgl-loop-uv
+    PRIVATE gtest
+)
+target_compile_definitions(test-render PRIVATE -DRESOURCES="${CMAKE_CURRENT_SOURCE_DIR}")
+target_add_mason_package(test-render PRIVATE geometry)
+target_add_mason_package(test-render PRIVATE variant)
+target_add_mason_package(test-render PRIVATE unique_resource)
+target_add_mason_package(test-render PRIVATE rapidjson)
+target_add_mason_package(test-render PRIVATE pixelmatch)
+target_add_mason_package(test-render PRIVATE boost)
+target_add_mason_package(test-render PRIVATE geojson)
+target_add_mason_package(test-render PRIVATE geojsonvt)
+target_add_mason_package(test-render PRIVATE shelf-pack)

@@ -84,15 +84,15 @@ RunLoop::RunLoop(Type type) : impl(std::make_unique<Impl>()) {
         if (uv_loop_init(impl->loop) != 0) {
             throw std::runtime_error("Failed to initialize loop.");
         }
-        std::cout << "RunLoop::RunLoop New ----------- " << impl->loop << std::endl << std::flush;
+//        std::cout << "RunLoop::RunLoop New ----------- " << impl->loop << std::endl << std::flush;
         break;
     case Type::Default:
         impl->loop = uv_default_loop();
         break;
     }
 
-    auto* l = uv_default_loop();
-    std::cout << "RunLoop::RunLoop test default ----------- " << l << std::endl << std::flush;
+//    auto* l = uv_default_loop();
+//    std::cout << "RunLoop::RunLoop test default ----------- " << l << std::endl << std::flush;
 
     // Just for holding a ref to the main loop and keep
     // it alive as required by libuv.

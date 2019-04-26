@@ -90,7 +90,7 @@ public:
 
         loop->stop();
         thread.join();
-        std::cout<<"~~~~~~Thread"<<std::endl;
+//        std::cout<<"~~~~~~Thread"<<std::endl;
     }
 
     // Returns a non-owning reference to `Object` that
