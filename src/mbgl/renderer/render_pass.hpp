@@ -9,8 +9,8 @@ namespace mbgl {
 
 enum class RenderPass : uint8_t {
     None = 0,
-    Opaque = 1 << 0,
-    Translucent = 1 << 1,
+    Opaque = 1 << 0, // no light to pass
+    Translucent = 1 << 1, // allow partial light to pass
     Pass3D = 1 << 2,
 };
 
