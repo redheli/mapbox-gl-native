@@ -50,13 +50,16 @@ void TransformState::getProjMatrix(mat4& projMatrix, uint16_t nearZ, bool aligne
     // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
     const double farZ = furthestDistance * 1.01;
 
+    // just like glm::perspective()?
     matrix::perspective(projMatrix, getFieldOfView(), double(size.width) / size.height, nearZ, farZ);
 
     const bool flippedY = viewportMode == ViewportMode::FlippedY;
     matrix::scale(projMatrix, projMatrix, 1, flippedY ? 1 : -1, 1);
 
+    // camera is right up of the map , so translating the scene in the reverse direction of where camera
     matrix::translate(projMatrix, projMatrix, 0, 0, -getCameraToCenterDistance());
 
+    // rotate pitch
     using NO = NorthOrientation;
     switch (getNorthOrientation()) {
         case NO::Rightwards: matrix::rotate_y(projMatrix, projMatrix, getPitch()); break;
@@ -79,7 +82,7 @@ void TransformState::getProjMatrix(mat4& projMatrix, uint16_t nearZ, bool aligne
         projMatrix[9] = ySkew;
     }
 
-    // why z?
+    // why z?  b/c scale value not same at different latitude?
     matrix::scale(projMatrix, projMatrix, 1, 1,
                   1.0 / Projection::getMetersPerPixelAtLatitude(getLatLng(LatLng::Unwrapped).latitude(), getZoom()));
 
@@ -237,6 +240,7 @@ float TransformState::getFieldOfView() const {
     return fov;
 }
 
+// check how fov defined
 float TransformState::getCameraToCenterDistance() const {
     return 0.5 * size.height / std::tan(fov / 2.0);
 }
