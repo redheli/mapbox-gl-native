@@ -21,6 +21,9 @@ void TransformState::matrixFor(mat4& matrix, const UnwrappedTileID& tileID) cons
     // zoom 0 , 2^0 = 1, total 1*1 = 1
     // zoom 1 , 2^1 = 2, total 2*2 = 4
     // zoom 8 , 2^18= 256, total 256*256
+    /// max: tileScale is number of tiles of the world width(or height, same)
+    /// max: Projection::worldSize(scale) is the world size in real unit?
+    /// max: s is each tile's size in real unit
     const uint64_t tileScale = 1ull << tileID.canonical.z;
     const double s = Projection::worldSize(scale) / tileScale; // each tile size
 
@@ -50,13 +53,13 @@ void TransformState::getProjMatrix(mat4& projMatrix, uint16_t nearZ, bool aligne
     // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
     const double farZ = furthestDistance * 1.01;
 
-    // just like glm::perspective()?
+    // projection: just like glm::perspective()?
     matrix::perspective(projMatrix, getFieldOfView(), double(size.width) / size.height, nearZ, farZ);
 
     const bool flippedY = viewportMode == ViewportMode::FlippedY;
     matrix::scale(projMatrix, projMatrix, 1, flippedY ? 1 : -1, 1);
 
-    // camera is right up of the map , so translating the scene in the reverse direction of where camera
+    // view: camera is right up of the map , so translating the scene in the reverse direction of where camera
     matrix::translate(projMatrix, projMatrix, 0, 0, -getCameraToCenterDistance());
 
     // rotate pitch
